@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { kv } from "@vercel/kv";
 
 interface GameState {
   phase: "lobby" | "playing" | "reveal" | "finished";
@@ -15,8 +16,9 @@ interface GameState {
 }
 
 const PASSWORD = "easy";
+const KV_KEY = "game_state";
 
-let gameState: GameState = {
+const DEFAULT_STATE: GameState = {
   phase: "lobby",
   player1: "",
   player2: "",
@@ -30,6 +32,26 @@ let gameState: GameState = {
   questionOrder: [],
 };
 
+// In-memory fallback for local dev (when KV is not configured)
+let localState: GameState = { ...DEFAULT_STATE };
+
+async function getState(): Promise<GameState> {
+  try {
+    const state = await kv.get<GameState>(KV_KEY);
+    return state || { ...DEFAULT_STATE };
+  } catch {
+    return { ...localState };
+  }
+}
+
+async function setState(state: GameState): Promise<void> {
+  try {
+    await kv.set(KV_KEY, state);
+  } catch {
+    localState = state;
+  }
+}
+
 function shuffleArray(length: number): number[] {
   const arr = Array.from({ length }, (_, i) => i);
   for (let i = arr.length - 1; i > 0; i--) {
@@ -39,7 +61,10 @@ function shuffleArray(length: number): number[] {
   return arr;
 }
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
+  const gameState = await getState();
   return NextResponse.json(gameState);
 }
 
@@ -50,6 +75,8 @@ export async function POST(req: NextRequest) {
   if (password !== PASSWORD) {
     return NextResponse.json({ error: "Wrong password" }, { status: 401 });
   }
+
+  const gameState = await getState();
 
   switch (action) {
     case "join": {
@@ -63,6 +90,7 @@ export async function POST(req: NextRequest) {
         gameState.player2 = name;
       }
       gameState.playerCount = (gameState.player1 ? 1 : 0) + (gameState.player2 ? 1 : 0);
+      await setState(gameState);
       return NextResponse.json(gameState);
     }
 
@@ -74,6 +102,7 @@ export async function POST(req: NextRequest) {
       gameState.activePlayer = 1;
       gameState.currentQuestion = 0;
       gameState.questionOrder = shuffleArray(100);
+      await setState(gameState);
       return NextResponse.json(gameState);
     }
 
@@ -91,6 +120,7 @@ export async function POST(req: NextRequest) {
       } else {
         return NextResponse.json({ error: "Not your turn" }, { status: 400 });
       }
+      await setState(gameState);
       return NextResponse.json(gameState);
     }
 
@@ -106,24 +136,13 @@ export async function POST(req: NextRequest) {
         gameState.phase = "playing";
         gameState.activePlayer = 1;
       }
+      await setState(gameState);
       return NextResponse.json(gameState);
     }
 
     case "reset": {
-      gameState = {
-        phase: "lobby",
-        player1: "",
-        player2: "",
-        playerCount: 0,
-        currentQuestion: 0,
-        player1Answer: "",
-        player2Answer: "",
-        player1Submitted: false,
-        player2Submitted: false,
-        activePlayer: null,
-        questionOrder: [],
-      };
-      return NextResponse.json(gameState);
+      await setState({ ...DEFAULT_STATE });
+      return NextResponse.json({ ...DEFAULT_STATE });
     }
 
     default:
