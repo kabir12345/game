@@ -204,6 +204,12 @@ export default function Home() {
               >
                 Player 2{game?.player2 ? ` — ${game.player2}` : ""}
               </button>
+              <button
+                onClick={resetGame}
+                className="w-full py-2 rounded-xl bg-white/5 border border-white/10 text-white/40 text-sm hover:bg-white/10 hover:text-white/60 transition-all active:scale-[0.98]"
+              >
+                Reset Game
+              </button>
             </div>
           </div>
         )}
