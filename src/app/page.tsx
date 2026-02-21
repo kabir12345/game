@@ -264,6 +264,13 @@ export default function Home() {
                   </div>
                 </div>
 
+                <button
+                  onClick={resetGame}
+                  className="w-full py-2 rounded-xl bg-white/5 border border-white/10 text-white/40 text-sm hover:bg-white/10 hover:text-white/60 transition-all active:scale-[0.98]"
+                >
+                  Reset Game
+                </button>
+
                 {game.player1 && game.player2 && myPlayer === 1 && (
                   <button
                     onClick={startGame}
