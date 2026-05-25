@@ -1,19 +1,92 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0f0a1e;
-  --foreground: #ededed;
+  --background: #0a0a0c;
+  --foreground: #e8e8e8;
+  --muted: #484848;
+  --accent: #f0f0f0;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* Custom cursor for fluid mode */
+.fluid-cursor {
+  cursor: none;
+}
+
+/* Breathing animation keyframes */
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.05); opacity: 0.9; }
+}
+
+@keyframes drift {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(10px, -10px) rotate(2deg); }
+  50% { transform: translate(-5px, 15px) rotate(-1deg); }
+  75% { transform: translate(-15px, 5px) rotate(1deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { filter: blur(40px) brightness(1); }
+  50% { filter: blur(60px) brightness(1.2); }
+}
+
+@keyframes float-up {
+  0% { transform: translateY(100vh) scale(0); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-100vh) scale(1); opacity: 0; }
+}
+
+@keyframes word-drift {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(var(--drift-x, 5px), var(--drift-y, -5px)); }
+  66% { transform: translate(calc(var(--drift-x, 5px) * -0.5), calc(var(--drift-y, -5px) * 0.5)); }
+}
+
+@keyframes spatial-pulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.02); }
+}
+
+/* Selection styling */
+::selection {
+  background: rgba(255, 255, 255, 0.2);
+  color: inherit;
+}
+
+/* Scrollbar hiding for immersive experience */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
